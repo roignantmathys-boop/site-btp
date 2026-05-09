@@ -23,3 +23,8 @@ with col2:
 
     if st.button("♻️ Registre Déchets", use_container_width=True):
         st.switch_page("pages/2_Registre_Dechets.py")
+
+with col3:
+
+if st.button("📊 Dashboard", use_container_width=True):
+    st.switch_page("pages/3_Dashboard.py")
