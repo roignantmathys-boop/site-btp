@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(
     page_title="Gestion BTP",
@@ -6,37 +7,99 @@ st.set_page_config(
     layout="wide"
 )
 
+# -----------------------------
+# TITRE
+# -----------------------------
+
 st.title("🏗️ Gestion Chantier BTP")
 
 profil = st.selectbox(
     "Choisir votre profil",
-    ["Conducteur de travaux", "Chef de chantier", "Administratif", "Direction"]
+    [
+        "Conducteur de travaux",
+        "Chef de chantier",
+        "Administratif",
+        "Direction"
+    ]
 )
 
 st.write("Profil sélectionné :", profil)
 
-st.subheader("Menu principal")
+st.divider()
 
-col1, col2, col3 = st.columns(3)
+# -----------------------------
+# AJOUT CHANTIER
+# -----------------------------
 
-with col1:
-    if st.button("📁 Chantiers"):
-        st.success("Module Chantiers")
+st.header("📁 Gestion des chantiers")
 
-with col2:
-    if st.button("♻️ Registre déchets"):
-        st.success("Module Registre déchets")
+with st.form("form_chantier"):
 
-with col3:
-    if st.button("📄 FDS Produits"):
-        st.success("Module FDS")
+    nom = st.text_input("Nom du chantier")
 
-col4, col5 = st.columns(2)
+    responsable = st.text_input("Responsable chantier")
 
-with col4:
-    if st.button("💰 Devis / Commandes"):
-        st.success("Module Devis / Commandes")
+    ville = st.text_input("Ville")
 
-with col5:
-    if st.button("🪝 Vérifications matériel"):
-        st.success("Module Vérifications")
+    avancement = st.slider(
+        "Avancement (%)",
+        0,
+        100,
+        0
+    )
+
+    statut = st.selectbox(
+        "Statut",
+        [
+            "Préparation",
+            "En cours",
+            "Terminé",
+            "Suspendu"
+        ]
+    )
+
+    bouton = st.form_submit_button("Ajouter le chantier")
+
+# -----------------------------
+# BASE DE DONNÉES TEMPORAIRE
+# -----------------------------
+
+if "chantiers" not in st.session_state:
+    st.session_state.chantiers = []
+
+# -----------------------------
+# AJOUT DANS LE TABLEAU
+# -----------------------------
+
+if bouton:
+
+    nouveau = {
+        "Nom": nom,
+        "Responsable": responsable,
+        "Ville": ville,
+        "Avancement": f"{avancement} %",
+        "Statut": statut
+    }
+
+    st.session_state.chantiers.append(nouveau)
+
+    st.success("Chantier ajouté avec succès")
+
+# -----------------------------
+# AFFICHAGE TABLEAU
+# -----------------------------
+
+st.subheader("📋 Liste des chantiers")
+
+if len(st.session_state.chantiers) > 0:
+
+    df = pd.DataFrame(st.session_state.chantiers)
+
+    st.dataframe(
+        df,
+        use_container_width=True
+    )
+
+else:
+
+    st.info("Aucun chantier enregistré")
