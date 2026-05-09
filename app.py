@@ -1,11 +1,42 @@
 import streamlit as st
 import pandas as pd
+import os
 
 st.set_page_config(
     page_title="Gestion BTP",
     page_icon="🏗️",
     layout="wide"
 )
+
+# -----------------------------
+# FICHIER CSV
+# -----------------------------
+
+FICHIER = "chantiers.csv"
+
+# -----------------------------
+# CRÉATION FICHIER SI ABSENT
+# -----------------------------
+
+if not os.path.exists(FICHIER):
+
+    df_vide = pd.DataFrame(
+        columns=[
+            "Nom",
+            "Responsable",
+            "Ville",
+            "Avancement",
+            "Statut"
+        ]
+    )
+
+    df_vide.to_csv(FICHIER, index=False)
+
+# -----------------------------
+# LECTURE DU CSV
+# -----------------------------
+
+df = pd.read_csv(FICHIER)
 
 # -----------------------------
 # TITRE
@@ -28,16 +59,16 @@ st.write("Profil sélectionné :", profil)
 st.divider()
 
 # -----------------------------
-# AJOUT CHANTIER
+# FORMULAIRE
 # -----------------------------
 
 st.header("📁 Gestion des chantiers")
 
-with st.form("form_chantier"):
+with st.form("formulaire"):
 
     nom = st.text_input("Nom du chantier")
 
-    responsable = st.text_input("Responsable chantier")
+    responsable = st.text_input("Responsable")
 
     ville = st.text_input("Ville")
 
@@ -58,48 +89,50 @@ with st.form("form_chantier"):
         ]
     )
 
-    bouton = st.form_submit_button("Ajouter le chantier")
+    ajouter = st.form_submit_button("Ajouter chantier")
 
 # -----------------------------
-# BASE DE DONNÉES TEMPORAIRE
+# AJOUT CHANTIER
 # -----------------------------
 
-if "chantiers" not in st.session_state:
-    st.session_state.chantiers = []
+if ajouter:
 
-# -----------------------------
-# AJOUT DANS LE TABLEAU
-# -----------------------------
-
-if bouton:
-
-    nouveau = {
+    nouvelle_ligne = pd.DataFrame([{
         "Nom": nom,
         "Responsable": responsable,
         "Ville": ville,
         "Avancement": f"{avancement} %",
         "Statut": statut
-    }
+    }])
 
-    st.session_state.chantiers.append(nouveau)
+    df = pd.concat(
+        [df, nouvelle_ligne],
+        ignore_index=True
+    )
 
-    st.success("Chantier ajouté avec succès")
+    df.to_csv(FICHIER, index=False)
+
+    st.success("Chantier enregistré")
 
 # -----------------------------
-# AFFICHAGE TABLEAU
+# AFFICHAGE
 # -----------------------------
 
 st.subheader("📋 Liste des chantiers")
 
-if len(st.session_state.chantiers) > 0:
+st.dataframe(
+    df,
+    use_container_width=True
+)
 
-    df = pd.DataFrame(st.session_state.chantiers)
+# -----------------------------
+# TÉLÉCHARGEMENT CSV
+# -----------------------------
 
-    st.dataframe(
-        df,
-        use_container_width=True
+with open(FICHIER, "rb") as fichier:
+
+    st.download_button(
+        "⬇️ Télécharger la liste",
+        fichier,
+        file_name="chantiers.csv"
     )
-
-else:
-
-    st.info("Aucun chantier enregistré")
